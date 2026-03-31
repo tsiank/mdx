@@ -477,7 +477,7 @@ impl MdxReader {
 
             // Perform the search
             let top_docs = searcher
-                .search(&query, &TopDocs::with_limit(max_results))
+                .search(&query, &TopDocs::with_limit(max_results).order_by_score())
                 .map_err(|e| ZdbError::general_error(format!("FTS search failed: {}", e)))?;
 
             // Extract results
