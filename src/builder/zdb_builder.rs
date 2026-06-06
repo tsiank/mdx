@@ -400,7 +400,7 @@ impl ZDBBuilder {
         let mut header_bytes = header_str.as_bytes().to_vec();
         header_bytes.push(0);
         writer.write_all(&header_bytes)?;
-        let adler = adler::adler32_slice(&header_bytes);
+        let adler = adler2::adler32_slice(&header_bytes);
         writer.write_u32::<LittleEndian>(adler)?;
         Ok(())
     }

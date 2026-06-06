@@ -91,7 +91,7 @@ impl StorageBlock {
         let crc_is_for_compressed_data = encryption_method != EncryptionMethod::None;
         if crc_is_for_compressed_data {
             //Crc is for compressed data, not for encrypted data
-            let alder_crc = adler::adler32_slice(raw_data);
+            let alder_crc = adler2::adler32_slice(raw_data);
             if data_crc != alder_crc {
                 return Err(ZdbError::crc_mismatch(data_crc, alder_crc));
             }
@@ -101,7 +101,7 @@ impl StorageBlock {
         let decompressor = get_compressor(compression_method);
         let data = decompressor.decompress(raw_data, original_data_length as usize)?;
         if !crc_is_for_compressed_data {
-            let alder_crc = adler::adler32_slice(&data);
+            let alder_crc = adler2::adler32_slice(&data);
             if data_crc != alder_crc {
                 return Err(ZdbError::crc_mismatch(data_crc, alder_crc));
             }
@@ -144,9 +144,9 @@ impl StorageBlock {
         // If encryption is applied, CRC is for compressed data (matching reader's logic at line 54)
         // If no encryption, CRC is for original uncompressed data (matching reader's logic at line 67)
         let data_crc = if will_encrypt {
-            adler::adler32_slice(&compressed_data)
+            adler2::adler32_slice(&compressed_data)
         } else {
-            adler::adler32_slice(data)
+            adler2::adler32_slice(data)
         };
 
         if will_encrypt {

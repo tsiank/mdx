@@ -2,9 +2,10 @@
 name = "mdx"
 version = "0.5.0"
 edition = "2024"
+publish = false
 description = "MDict .mdx/.mdd file reader and writer for Rust"
 license = "GNU Affero General Public License v3.0"
-repository = "https://github.com/raymanzhang/mdx"
+repository = "https://github.com/Safari77/mdx"
 keywords = [
     "mdict",
     "mdx",
@@ -20,9 +21,7 @@ categories = [
     "parser-implementations",
 ]
 readme = "README.md"
-authors = ["Rayman Zhang <raymanzhang@gmail.com>"]
-homepage = "https://github.com/raymanzhang/mdx"
-documentation = "https://github.com/raymanzhang/mdx/blob/main/README.md"
+authors = ["Sami Farin"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -42,7 +41,7 @@ lzma-rs = "^0.3"
 bzip2 = "0.6"
 rust-lzo = "^0.6.2"
 serde = { version = "1.0", features = ["derive"] }
-adler = "1.0"
+adler2 = "2"
 serde-xml-rs = "0.8"
 serde_json = "1.0"
 xxhash-rust = { version = "^0.8.15", features = ["xxh64"] }

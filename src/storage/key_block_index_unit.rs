@@ -92,7 +92,7 @@ impl KeyBlockIndexUnit {
                 idx_para = decrypted_idx_para;
             }
             let crc = reader.read_u32::<BigEndian>()?;
-            let checksum = adler::adler32_slice(&idx_para);
+            let checksum = adler2::adler32_slice(&idx_para);
             if crc != checksum {
                 return Err(ZdbError::crc_mismatch(crc, checksum));
             }

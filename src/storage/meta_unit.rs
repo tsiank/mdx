@@ -431,8 +431,8 @@ fn read_cstr_with_crc<R: Read>(reader: &mut R) -> Result<String> {
     let mut data = vec![0u8; length as usize];
     reader.read_exact(&mut data)?;
     let crc = reader.read_u32::<BigEndian>()?;
-    if crc != adler::adler32_slice(&data).to_be() {
-        return Err(ZdbError::crc_mismatch(crc, adler::adler32_slice(&data).to_be()));
+    if crc != adler2::adler32_slice(&data).to_be() {
+        return Err(ZdbError::crc_mismatch(crc, adler2::adler32_slice(&data).to_be()));
     }
     if data.len() > 1 {
         //if data is utf-16le, return utf-16le string
