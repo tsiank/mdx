@@ -121,12 +121,6 @@ impl MDictSourceLoader {
                 return Err(ZdbError::user_interrupted());
             }
         }
-        Ok((
-            MDictSourceLoader {
-                source_file,
-                input_reader,
-            },
-            entry_records,
-        ))
+        Ok((MDictSourceLoader { source_file, input_reader }, entry_records))
     }
 }

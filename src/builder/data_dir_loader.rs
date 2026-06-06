@@ -46,10 +46,7 @@ impl DataDirLoader {
             })?;
 
             // Use forward slashes for MDD keys and prefix with backslash
-            let key = format!(
-                "/{}",
-                windows_path_to_unix_path(&relative_path.to_string_lossy())
-            );
+            let key = format!("/{}", windows_path_to_unix_path(&relative_path.to_string_lossy()));
 
             let record = ZdbRecord {
                 key: key.clone(),
@@ -64,11 +61,6 @@ impl DataDirLoader {
                 return Err(ZdbError::user_interrupted());
             }
         }
-        Ok((
-            DataDirLoader {
-                source_dir: source_dir.to_string(),
-            },
-            entry_records,
-        ))
+        Ok((DataDirLoader { source_dir: source_dir.to_string() }, entry_records))
     }
 }

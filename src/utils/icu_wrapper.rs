@@ -51,12 +51,10 @@ mod rust_icu_impl {
 
         /// Compares two UTF-8 strings according to the collation rules.
         pub fn strcoll_utf8(&self, left: &str, right: &str) -> Result<std::cmp::Ordering> {
-            self.inner
-                .strcoll_utf8(left, right)
-                .map_err(|e| ZdbError::IcuError {
-                    source: e,
-                    backtrace: snafu::Backtrace::capture(),
-                })
+            self.inner.strcoll_utf8(left, right).map_err(|e| ZdbError::IcuError {
+                source: e,
+                backtrace: snafu::Backtrace::capture(),
+            })
         }
     }
 
@@ -303,10 +301,7 @@ mod icu_impl {
 
             log::info!("Successfully created collator for locale: {}", locale_str);
 
-            Ok(Self {
-                collator,
-                locale_str: locale_str.to_string(),
-            })
+            Ok(Self { collator, locale_str: locale_str.to_string() })
         }
 
         /// Generate a sort key for the given string
@@ -340,9 +335,7 @@ mod icu_impl {
 
     impl UChar {
         pub fn try_from(s: &str) -> Result<Self> {
-            Ok(Self {
-                data: s.to_string(),
-            })
+            Ok(Self { data: s.to_string() })
         }
     }
 
@@ -354,9 +347,7 @@ mod icu_impl {
 
     impl IcuError {
         pub fn new<S: Into<String>>(message: S) -> Self {
-            Self {
-                message: message.into(),
-            }
+            Self { message: message.into() }
         }
     }
 
@@ -408,34 +399,16 @@ mod icu_impl {
             let collator = UCollator::try_from("en").expect("Failed to create collator");
 
             // Test equal strings
-            let result = collator
-                .strcoll_utf8("hello", "hello")
-                .expect("Comparison failed");
-            assert_eq!(
-                result,
-                std::cmp::Ordering::Equal,
-                "Equal strings should return Equal"
-            );
+            let result = collator.strcoll_utf8("hello", "hello").expect("Comparison failed");
+            assert_eq!(result, std::cmp::Ordering::Equal, "Equal strings should return Equal");
 
             // Test less than
-            let result = collator
-                .strcoll_utf8("abc", "abd")
-                .expect("Comparison failed");
-            assert_eq!(
-                result,
-                std::cmp::Ordering::Less,
-                "abc should be less than abd"
-            );
+            let result = collator.strcoll_utf8("abc", "abd").expect("Comparison failed");
+            assert_eq!(result, std::cmp::Ordering::Less, "abc should be less than abd");
 
             // Test greater than
-            let result = collator
-                .strcoll_utf8("zyx", "abc")
-                .expect("Comparison failed");
-            assert_eq!(
-                result,
-                std::cmp::Ordering::Greater,
-                "zyx should be greater than abc"
-            );
+            let result = collator.strcoll_utf8("zyx", "abc").expect("Comparison failed");
+            assert_eq!(result, std::cmp::Ordering::Greater, "zyx should be greater than abc");
         }
 
         /// Test ks (strength level) parameter verification
@@ -450,22 +423,12 @@ mod icu_impl {
             let col_l3 =
                 UCollator::try_from("en-US-u-ks-level3").expect("Failed to create level3 collator");
 
-            let cmp_l1 = col_l1
-                .strcoll_utf8("café", "cafe")
-                .expect("Comparison failed at level1");
-            let cmp_l3 = col_l3
-                .strcoll_utf8("café", "cafe")
-                .expect("Comparison failed at level3");
+            let cmp_l1 = col_l1.strcoll_utf8("café", "cafe").expect("Comparison failed at level1");
+            let cmp_l3 = col_l3.strcoll_utf8("café", "cafe").expect("Comparison failed at level3");
 
             // Verify different behavior between levels
-            log::info!(
-                "Level 1 (PRIMARY) comparison 'café' vs 'cafe': {:?}",
-                cmp_l1
-            );
-            log::info!(
-                "Level 3 (TERTIARY) comparison 'café' vs 'cafe': {:?}",
-                cmp_l3
-            );
+            log::info!("Level 1 (PRIMARY) comparison 'café' vs 'cafe': {:?}", cmp_l1);
+            log::info!("Level 3 (TERTIARY) comparison 'café' vs 'cafe': {:?}", cmp_l3);
 
             // At level 1, accents should be ignored (may be equal)
             // At level 3, accents should matter (should differ)
@@ -493,12 +456,8 @@ mod icu_impl {
                 .expect("Failed to create collator with case level off");
 
             // With case level, uppercase typically comes before lowercase at tertiary level
-            let res_case_on = collator_case_on
-                .strcoll_utf8("A", "a")
-                .expect("Comparison failed");
-            let res_case_off = collator_case_off
-                .strcoll_utf8("A", "a")
-                .expect("Comparison failed");
+            let res_case_on = collator_case_on.strcoll_utf8("A", "a").expect("Comparison failed");
+            let res_case_off = collator_case_off.strcoll_utf8("A", "a").expect("Comparison failed");
 
             log::info!("Case level ON - 'A' vs 'a': {:?}", res_case_on);
             log::info!("Case level OFF - 'A' vs 'a': {:?}", res_case_off);
@@ -523,12 +482,10 @@ mod icu_impl {
                 .expect("Failed to create collator with noignore alternate handling");
 
             // Compare strings with punctuation
-            let res_shifted = collator_shifted
-                .strcoll_utf8("a-b", "ab")
-                .expect("Comparison failed");
-            let res_noignore = collator_noignore
-                .strcoll_utf8("a-b", "ab")
-                .expect("Comparison failed");
+            let res_shifted =
+                collator_shifted.strcoll_utf8("a-b", "ab").expect("Comparison failed");
+            let res_noignore =
+                collator_noignore.strcoll_utf8("a-b", "ab").expect("Comparison failed");
 
             log::info!("Shifted - 'a-b' vs 'ab': {:?}", res_shifted);
             log::info!("NoIgnore - 'a-b' vs 'ab': {:?}", res_noignore);
@@ -549,21 +506,13 @@ mod icu_impl {
 
             // With numeric sorting: page2 < page10
             // Without numeric sorting: page10 < page2 (string comparison)
-            let res_numeric = collator_numeric
-                .strcoll_utf8("page2", "page10")
-                .expect("Comparison failed");
-            let res_non_numeric = collator_non_numeric
-                .strcoll_utf8("page2", "page10")
-                .expect("Comparison failed");
+            let res_numeric =
+                collator_numeric.strcoll_utf8("page2", "page10").expect("Comparison failed");
+            let res_non_numeric =
+                collator_non_numeric.strcoll_utf8("page2", "page10").expect("Comparison failed");
 
-            log::info!(
-                "Numeric sorting ON - 'page2' vs 'page10': {:?}",
-                res_numeric
-            );
-            log::info!(
-                "Numeric sorting OFF - 'page2' vs 'page10': {:?}",
-                res_non_numeric
-            );
+            log::info!("Numeric sorting ON - 'page2' vs 'page10': {:?}", res_numeric);
+            log::info!("Numeric sorting OFF - 'page2' vs 'page10': {:?}", res_non_numeric);
 
             // With numeric sorting, page2 should be less than page10
             if res_numeric == std::cmp::Ordering::Less {
@@ -584,12 +533,8 @@ mod icu_impl {
             let chars = vec!["安", "波", "城"]; // ān, bō, chéng
 
             // Verify basic ordering
-            let res1 = collator
-                .strcoll_utf8(chars[0], chars[1])
-                .expect("Comparison failed");
-            let res2 = collator
-                .strcoll_utf8(chars[1], chars[2])
-                .expect("Comparison failed");
+            let res1 = collator.strcoll_utf8(chars[0], chars[1]).expect("Comparison failed");
+            let res2 = collator.strcoll_utf8(chars[1], chars[2]).expect("Comparison failed");
 
             log::info!("Chinese Pinyin '安' vs '波': {:?}", res1);
             log::info!("Chinese Pinyin '波' vs '城': {:?}", res2);
@@ -615,21 +560,13 @@ mod icu_impl {
             let char_2_stroke = "二";
             let char_3_stroke = "三";
 
-            let res_1_vs_2 = collator
-                .strcoll_utf8(char_1_stroke, char_2_stroke)
-                .expect("Comparison failed");
-            let res_2_vs_3 = collator
-                .strcoll_utf8(char_2_stroke, char_3_stroke)
-                .expect("Comparison failed");
+            let res_1_vs_2 =
+                collator.strcoll_utf8(char_1_stroke, char_2_stroke).expect("Comparison failed");
+            let res_2_vs_3 =
+                collator.strcoll_utf8(char_2_stroke, char_3_stroke).expect("Comparison failed");
 
-            log::info!(
-                "Stroke '一' (1 stroke) vs '二' (2 strokes): {:?}",
-                res_1_vs_2
-            );
-            log::info!(
-                "Stroke '二' (2 strokes) vs '三' (3 strokes): {:?}",
-                res_2_vs_3
-            );
+            log::info!("Stroke '一' (1 stroke) vs '二' (2 strokes): {:?}", res_1_vs_2);
+            log::info!("Stroke '二' (2 strokes) vs '三' (3 strokes): {:?}", res_2_vs_3);
 
             // Verify stroke ordering is consistent
             if res_1_vs_2 == std::cmp::Ordering::Less && res_2_vs_3 == std::cmp::Ordering::Less {
@@ -697,13 +634,8 @@ mod icu_impl {
             match result_kr {
                 Ok(collator) => {
                     // Verify it still works despite unsupported extension
-                    let cmp = collator
-                        .strcoll_utf8("a", "b")
-                        .expect("Basic comparison failed");
-                    log::info!(
-                        "✓ kr extension ignored, collator still functional: {:?}",
-                        cmp
-                    );
+                    let cmp = collator.strcoll_utf8("a", "b").expect("Basic comparison failed");
+                    log::info!("✓ kr extension ignored, collator still functional: {:?}", cmp);
                 }
                 Err(e) => {
                     log::info!("kr extension caused error (may be expected): {:?}", e);
@@ -712,13 +644,8 @@ mod icu_impl {
 
             match result_kv {
                 Ok(collator) => {
-                    let cmp = collator
-                        .strcoll_utf8("a", "b")
-                        .expect("Basic comparison failed");
-                    log::info!(
-                        "✓ kv extension ignored, collator still functional: {:?}",
-                        cmp
-                    );
+                    let cmp = collator.strcoll_utf8("a", "b").expect("Basic comparison failed");
+                    log::info!("✓ kv extension ignored, collator still functional: {:?}", cmp);
                 }
                 Err(e) => {
                     log::info!("kv extension caused error (may be expected): {:?}", e);
@@ -734,12 +661,8 @@ mod icu_impl {
                 UCollator::try_from("en-US-u-ks-level1").expect("Failed to create level1 collator");
 
             // Compare various case combinations
-            let result_aa = collator_l1
-                .strcoll_utf8("a", "A")
-                .expect("Comparison failed");
-            let result_ab = collator_l1
-                .strcoll_utf8("a", "B")
-                .expect("Comparison failed");
+            let result_aa = collator_l1.strcoll_utf8("a", "A").expect("Comparison failed");
+            let result_ab = collator_l1.strcoll_utf8("a", "B").expect("Comparison failed");
 
             log::info!("Case-insensitive Level1 - 'a' vs 'A': {:?}", result_aa);
             log::info!("Case-insensitive Level1 - 'a' vs 'B': {:?}", result_ab);
@@ -811,12 +734,10 @@ mod icu_impl {
             let char1 = "马"; // mǎ (horse)
             let char2 = "妈"; // mā (mother)
 
-            let result_standard = collator_standard
-                .strcoll_utf8(char1, char2)
-                .expect("Comparison failed");
-            let result_pinyin = collator_pinyin
-                .strcoll_utf8(char1, char2)
-                .expect("Comparison failed");
+            let result_standard =
+                collator_standard.strcoll_utf8(char1, char2).expect("Comparison failed");
+            let result_pinyin =
+                collator_pinyin.strcoll_utf8(char1, char2).expect("Comparison failed");
 
             log::info!("Standard collation - '马' vs '妈': {:?}", result_standard);
             log::info!("Pinyin collation - '马' vs '妈': {:?}", result_pinyin);

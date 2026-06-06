@@ -47,46 +47,27 @@ pub use snafu;
 pub enum ZdbError {
     /// I/O error occurred during file operations.
     #[snafu(display("IO error: {source}"))]
-    Io {
-        source: io::Error,
-        backtrace: Backtrace,
-    },
+    Io { source: io::Error, backtrace: Backtrace },
 
     /// CRC checksum validation failed, indicating data corruption.        
     #[snafu(display("CRC mismatch: expected {expected:#x}, got {got:#x}"))]
-    CrcMismatch {
-        expected: u32,
-        got: u32,
-        backtrace: Backtrace,
-    },
+    CrcMismatch { expected: u32, got: u32, backtrace: Backtrace },
 
     /// Error parsing XML, JSON, or other structured data formats.
     #[snafu(display("Parser error: {source}"))]
-    ParserError {
-        source: Box<dyn std::error::Error + Send + Sync + 'static>,
-        backtrace: Backtrace,
-    },
+    ParserError { source: Box<dyn std::error::Error + Send + Sync + 'static>, backtrace: Backtrace },
 
     /// Dictionary file data is malformed or doesn't match expected format.
     #[snafu(display("Invalid data format: {message}"))]
-    InvalidDataFormat {
-        message: String,
-        backtrace: Backtrace,
-    },
+    InvalidDataFormat { message: String, backtrace: Backtrace },
 
     /// Function was called with invalid parameters.
     #[snafu(display("Invalid parameter: {message}"))]
-    InvalidParameter {
-        message: String,
-        backtrace: Backtrace,
-    },
+    InvalidParameter { message: String, backtrace: Backtrace },
 
     /// ICU library error during collation or locale operations.
     #[snafu(display("Icu common error: {source}"))]
-    IcuError {
-        source: crate::utils::icu_wrapper::IcuError,
-        backtrace: Backtrace,
-    },
+    IcuError { source: crate::utils::icu_wrapper::IcuError, backtrace: Backtrace },
 
     /// Dictionary key was not found during lookup.
     #[snafu(display("Key not found: {key}"))]
@@ -94,17 +75,11 @@ pub enum ZdbError {
 
     /// Dictionary profile ID was not found.
     #[snafu(display("Profile not found: {profile_id}"))]
-    ProfileNotFound {
-        profile_id: u32,
-        backtrace: Backtrace,
-    },
+    ProfileNotFound { profile_id: u32, backtrace: Backtrace },
 
     /// Error during compression or decompression operations.
     #[snafu(display("Compression error: {message}"))]
-    CompressionError {
-        message: String,
-        backtrace: Backtrace,
-    },
+    CompressionError { message: String, backtrace: Backtrace },
 
     /// Operation was interrupted by user.
     #[snafu(display("User interrupted"))]
@@ -112,37 +87,25 @@ pub enum ZdbError {
 
     /// General error that doesn't fit other categories.
     #[snafu(display("General error: {message}"))]
-    GeneralError {
-        message: String,
-        backtrace: Backtrace,
-    },
+    GeneralError { message: String, backtrace: Backtrace },
 }
 
 // For automatic conversions from standard error types
 impl From<io::Error> for ZdbError {
     fn from(source: io::Error) -> Self {
-        Self::Io {
-            source,
-            backtrace: Backtrace::capture(),
-        }
+        Self::Io { source, backtrace: Backtrace::capture() }
     }
 }
 
 impl From<serde_xml_rs::Error> for ZdbError {
     fn from(source: serde_xml_rs::Error) -> Self {
-        Self::ParserError {
-            source: Box::new(source),
-            backtrace: Backtrace::capture(),
-        }
+        Self::ParserError { source: Box::new(source), backtrace: Backtrace::capture() }
     }
 }
 
 impl From<quick_xml::Error> for ZdbError {
     fn from(source: quick_xml::Error) -> Self {
-        Self::ParserError {
-            source: Box::new(source),
-            backtrace: Backtrace::capture(),
-        }
+        Self::ParserError { source: Box::new(source), backtrace: Backtrace::capture() }
     }
 }
 
@@ -166,37 +129,25 @@ impl From<std::str::Utf8Error> for ZdbError {
 
 impl From<url::ParseError> for ZdbError {
     fn from(source: url::ParseError) -> Self {
-        Self::ParserError {
-            source: Box::new(source),
-            backtrace: Backtrace::capture(),
-        }
+        Self::ParserError { source: Box::new(source), backtrace: Backtrace::capture() }
     }
 }
 
 impl From<crate::utils::icu_wrapper::IcuError> for ZdbError {
     fn from(source: crate::utils::icu_wrapper::IcuError) -> Self {
-        Self::IcuError {
-            source,
-            backtrace: Backtrace::capture(),
-        }
+        Self::IcuError { source, backtrace: Backtrace::capture() }
     }
 }
 
 impl From<std::num::ParseIntError> for ZdbError {
     fn from(source: std::num::ParseIntError) -> Self {
-        Self::ParserError {
-            source: Box::new(source),
-            backtrace: Backtrace::capture(),
-        }
+        Self::ParserError { source: Box::new(source), backtrace: Backtrace::capture() }
     }
 }
 
 impl From<serde_json::Error> for ZdbError {
     fn from(source: serde_json::Error) -> Self {
-        Self::ParserError {
-            source: Box::new(source),
-            backtrace: Backtrace::capture(),
-        }
+        Self::ParserError { source: Box::new(source), backtrace: Backtrace::capture() }
     }
 }
 
@@ -212,34 +163,22 @@ impl ZdbError {
     /// let error = ZdbError::invalid_parameter("Path cannot be empty");
     /// ```
     pub fn invalid_parameter<S: Into<String>>(message: S) -> Self {
-        Self::InvalidParameter {
-            message: message.into(),
-            backtrace: Backtrace::capture(),
-        }
+        Self::InvalidParameter { message: message.into(), backtrace: Backtrace::capture() }
     }
 
     /// Creates an `InvalidDataFormat` error with the given message.
     pub fn invalid_data_format<S: Into<String>>(message: S) -> Self {
-        Self::InvalidDataFormat {
-            message: message.into(),
-            backtrace: Backtrace::capture(),
-        }
+        Self::InvalidDataFormat { message: message.into(), backtrace: Backtrace::capture() }
     }
 
     /// Creates a `KeyNotFound` error for the given key.
     pub fn key_not_found<S: Into<String>>(key: S) -> Self {
-        Self::KeyNotFound {
-            key: key.into(),
-            backtrace: Backtrace::capture(),
-        }
+        Self::KeyNotFound { key: key.into(), backtrace: Backtrace::capture() }
     }
 
     /// Creates a `ProfileNotFound` error for the given profile ID.
     pub fn profile_not_found(profile_id: u32) -> Self {
-        Self::ProfileNotFound {
-            profile_id,
-            backtrace: Backtrace::capture(),
-        }
+        Self::ProfileNotFound { profile_id, backtrace: Backtrace::capture() }
     }
 
     /// Creates an `InvalidParameter` error for an invalid path.
@@ -252,34 +191,22 @@ impl ZdbError {
 
     /// Creates a `CompressionError` with the given message.
     pub fn compression_error<S: Into<String>>(message: S) -> Self {
-        Self::CompressionError {
-            message: message.into(),
-            backtrace: Backtrace::capture(),
-        }
+        Self::CompressionError { message: message.into(), backtrace: Backtrace::capture() }
     }
 
     /// Creates a `CompressionError` for decompression failures.
     pub fn decompression_error<S: Into<String>>(message: S) -> Self {
-        Self::CompressionError {
-            message: message.into(),
-            backtrace: Backtrace::capture(),
-        }
+        Self::CompressionError { message: message.into(), backtrace: Backtrace::capture() }
     }
 
     /// Creates a `UserInterrupted` error.
     pub fn user_interrupted() -> Self {
-        Self::UserInterrupted {
-            backtrace: Backtrace::capture(),
-        }
+        Self::UserInterrupted { backtrace: Backtrace::capture() }
     }
 
     /// Creates a `CrcMismatch` error with expected and actual CRC values.
     pub fn crc_mismatch(expected: u32, got: u32) -> Self {
-        Self::CrcMismatch {
-            expected,
-            got,
-            backtrace: Backtrace::capture(),
-        }
+        Self::CrcMismatch { expected, got, backtrace: Backtrace::capture() }
     }
 
     /// Checks if this error is a `KeyNotFound` variant.
@@ -292,10 +219,7 @@ impl ZdbError {
 
     /// Creates a `GeneralError` with the given message.
     pub fn general_error<S: Into<String>>(message: S) -> Self {
-        Self::GeneralError {
-            message: message.into(),
-            backtrace: Backtrace::capture(),
-        }
+        Self::GeneralError { message: message.into(), backtrace: Backtrace::capture() }
     }
 }
 

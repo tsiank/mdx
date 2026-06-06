@@ -54,11 +54,7 @@ fn init_index(index_dir_path: &PathBuf) -> Result<(Index, IndexFields)> {
     let index = Index::create_in_dir(index_dir_path, schema)
         .map_err(|e| ZdbError::general_error(e.to_string()))?;
 
-    let index_fields = IndexFields {
-        entry_no,
-        key,
-        content,
-    };
+    let index_fields = IndexFields { entry_no, key, content };
 
     Ok((index, index_fields))
 }
@@ -130,10 +126,7 @@ pub fn make_index(file_path: &PathBuf, prog_rpt: Option<ProgressReportFn>) -> Re
         .commit()
         .map_err(|e| ZdbError::general_error(format!("Failed to commit index: {}", e)))?;
 
-    info!(
-        "Successfully indexed {} entries to Tantivy index",
-        entry_count
-    );
+    info!("Successfully indexed {} entries to Tantivy index", entry_count);
 
     drop(index_writer); // Drop the index writer to release the file lock
 
@@ -199,10 +192,7 @@ pub fn merge_index(index_path: &PathBuf) -> Result<()> {
 /// * `remove_source` - Whether to remove the source directory after packing
 pub fn pack_index(index_path: &PathBuf, remove_source: bool) -> Result<()> {
     use walkdir::WalkDir;
-    info!(
-        "Packing index directory (ZIP Stored): {}",
-        index_path.display()
-    );
+    info!("Packing index directory (ZIP Stored): {}", index_path.display());
     if !index_path.exists() || !index_path.is_dir() {
         return Err(ZdbError::general_error(format!(
             "Index directory does not exist: {}",
@@ -242,18 +232,11 @@ pub fn pack_index(index_path: &PathBuf, remove_source: bool) -> Result<()> {
 
         if path.is_dir() {
             // Ensure directory entry exists in zip
-            let dir_name = if name.ends_with('/') {
-                name.clone()
-            } else {
-                format!("{}/", name)
-            };
-            zip.add_directory(
-                dir_name,
-                FileOptions::<()>::default().unix_permissions(0o755),
-            )
-            .map_err(|e| {
-                ZdbError::general_error(format!("Failed to add directory to zip: {}", e))
-            })?;
+            let dir_name = if name.ends_with('/') { name.clone() } else { format!("{}/", name) };
+            zip.add_directory(dir_name, FileOptions::<()>::default().unix_permissions(0o755))
+                .map_err(|e| {
+                    ZdbError::general_error(format!("Failed to add directory to zip: {}", e))
+                })?;
         } else if path.is_file() {
             zip.start_file(name, options).map_err(|e| {
                 ZdbError::general_error(format!("Failed to start zip file entry: {}", e))
@@ -267,12 +250,8 @@ pub fn pack_index(index_path: &PathBuf, remove_source: bool) -> Result<()> {
         }
     }
 
-    zip.finish()
-        .map_err(|e| ZdbError::general_error(format!("Failed to finalize zip: {}", e)))?;
-    info!(
-        "Successfully packed index into ZIP (Stored) at: {}",
-        zip_file_path
-    );
+    zip.finish().map_err(|e| ZdbError::general_error(format!("Failed to finalize zip: {}", e)))?;
+    info!("Successfully packed index into ZIP (Stored) at: {}", zip_file_path);
 
     if remove_source {
         fs::remove_dir_all(index_path).map_err(|e| {

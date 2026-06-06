@@ -100,10 +100,7 @@ fn salsa20_word_to_byte(output: &mut [u8; 64], input: &[u32; 16]) {
 }
 
 pub fn salsa20_key_setup(ctx: &mut Salsa20Context, key: &[u8], kbits: u32) {
-    assert!(
-        kbits == 128 || kbits == 256,
-        "Key size must be 128 or 256 bits"
-    );
+    assert!(kbits == 128 || kbits == 256, "Key size must be 128 or 256 bits");
 
     let sigma = b"expand 32-byte k";
     let tau = b"expand 16-byte k";
@@ -139,10 +136,7 @@ pub fn salsa20_iv_setup(ctx: &mut Salsa20Context, iv: &[u8]) {
 }
 
 pub fn salsa20_encrypt_bytes(ctx: &mut Salsa20Context, m: &[u8], c: &mut [u8]) {
-    assert!(
-        m.len() == c.len(),
-        "Input and output buffers must have same length"
-    );
+    assert!(m.len() == c.len(), "Input and output buffers must have same length");
 
     if m.is_empty() {
         return;

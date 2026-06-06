@@ -52,10 +52,7 @@ impl TryFrom<u8> for EncryptionMethod {
             0 => Ok(EncryptionMethod::None),
             1 => Ok(EncryptionMethod::Simple),
             2 => Ok(EncryptionMethod::Salsa20),
-            _ => Err(ZdbError::invalid_parameter(format!(
-                "Invalid encryption method:{}",
-                value
-            ))),
+            _ => Err(ZdbError::invalid_parameter(format!("Invalid encryption method:{}", value))),
         }
     }
 }
@@ -246,11 +243,8 @@ pub fn get_encryptor(
 
 pub fn decrypt_salsa20(data: &[u8], key: &[u8]) -> Result<Vec<u8>> {
     let nonce = [0u8; 8];
-    let mut salsa20_encryptor = get_encryptor(
-        crate::crypto::encryption::EncryptionMethod::Salsa20,
-        key,
-        &nonce,
-    )?;
+    let mut salsa20_encryptor =
+        get_encryptor(crate::crypto::encryption::EncryptionMethod::Salsa20, key, &nonce)?;
     let mut decrypted_data = vec![0; data.len()];
     salsa20_encryptor.decrypt(data, &mut decrypted_data)?;
     Ok(decrypted_data)
@@ -258,11 +252,8 @@ pub fn decrypt_salsa20(data: &[u8], key: &[u8]) -> Result<Vec<u8>> {
 
 pub fn encrypt_salsa20(data: &[u8], key: &[u8]) -> Result<Vec<u8>> {
     let nonce = [0u8; 8];
-    let mut salsa20_encryptor = get_encryptor(
-        crate::crypto::encryption::EncryptionMethod::Salsa20,
-        key,
-        &nonce,
-    )?;
+    let mut salsa20_encryptor =
+        get_encryptor(crate::crypto::encryption::EncryptionMethod::Salsa20, key, &nonce)?;
     let mut encrypted_data = vec![0; data.len()];
     salsa20_encryptor.encrypt(data, &mut encrypted_data)?;
     Ok(encrypted_data)

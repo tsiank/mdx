@@ -96,18 +96,11 @@ impl ContentBlockIndexUnit {
         //Rollback to the beginning of data section
         reader.seek(SeekFrom::Start(cur_pos))?;
         let block_index_data = StorageBlock::from_reader_v3(reader, meta_info)?.data;
-        let (block_index_entries, total_original_data_length) = Self::read_block_index_entries(
-            &block_index_data,
-            meta_info,
-            block_index_count,
-        )?;
+        let (block_index_entries, total_original_data_length) =
+            Self::read_block_index_entries(&block_index_data, meta_info, block_index_count)?;
         reader.seek(SeekFrom::Start(end_of_unit))?;
         let record_count = data_info.record_count;
-        Ok(Self {
-            record_count,
-            block_index_entries,
-            total_original_data_length,
-        })
+        Ok(Self { record_count, block_index_entries, total_original_data_length })
     }
 
     pub fn from_reader_v1_v2<R: Read + Seek>(
@@ -126,11 +119,7 @@ impl ContentBlockIndexUnit {
         let block_index_data = read_exact_to_vec(reader, content_block_index_size as usize)?;
         let (block_index_entries, total_original_data_length) =
             Self::read_block_index_entries(&block_index_data, meta_info, block_count as u32)?;
-        Ok(Self {
-            record_count,
-            block_index_entries,
-            total_original_data_length,
-        })
+        Ok(Self { record_count, block_index_entries, total_original_data_length })
     }
 }
 
@@ -155,8 +144,6 @@ impl ContentBlockIndexUnit {
                 return Ok(entry.clone());
             }
         }
-        Err(crate::ZdbError::invalid_parameter(
-            "offset not found in any block index entry",
-        ))
+        Err(crate::ZdbError::invalid_parameter("offset not found in any block index entry"))
     }
 }

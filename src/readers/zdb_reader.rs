@@ -173,15 +173,10 @@ impl<R: Read + Seek> ZdbReader<R> {
         best_match: bool,
     ) -> crate::Result<Option<KeyIndex>> {
         let key_block_index =
-            self.key_block_indexes
-                .find_index(key, prefix_match, partial_match)?;
+            self.key_block_indexes.find_index(key, prefix_match, partial_match)?;
         if let Some(key_block_index) = key_block_index {
-            let key_block = self
-                .key_blocks
-                .get_key_block(&mut self.reader, &key_block_index)?;
-            let key_index = key_block
-                .borrow()
-                .find_index(key, prefix_match, partial_match)?;
+            let key_block = self.key_blocks.get_key_block(&mut self.reader, &key_block_index)?;
+            let key_index = key_block.borrow().find_index(key, prefix_match, partial_match)?;
             if let Some(key_index) = key_index {
                 if best_match && key_index.key != key {
                     let sort_key = get_sort_key(key.as_bytes(), &self.meta)?;
@@ -211,10 +206,7 @@ impl<R: Read + Seek> ZdbReader<R> {
     ) -> crate::Result<LinkedList<KeyIndex>> {
         let mut key_indexes = LinkedList::new();
         key_indexes.push_back(key_index.clone());
-        let max_count = min(
-            max_count,
-            self.get_entry_count() - key_index.entry_no as u64,
-        );
+        let max_count = min(max_count, self.get_entry_count() - key_index.entry_no as u64);
         let search_sort_key = get_sort_key(key_index.key.as_bytes(), &self.meta)?;
         for i in 1..max_count {
             let index = self.get_index(key_index.entry_no + i as EntryNo)?;
@@ -240,22 +232,17 @@ impl<R: Read + Seek> ZdbReader<R> {
     }
 
     pub fn get_content_block(&mut self, key_index: &KeyIndex) -> crate::Result<Rc<ContentBlock>> {
-        let content_block_index = self
-            .content_block_index
-            .get_index(key_index.content_offset_in_source)?;
-        let content_block = if let Some(block) = self
-            .block_cache
-            .peek(&content_block_index.block_offset_in_unit)
+        let content_block_index =
+            self.content_block_index.get_index(key_index.content_offset_in_source)?;
+        let content_block = if let Some(block) =
+            self.block_cache.peek(&content_block_index.block_offset_in_unit)
         {
             Rc::clone(block)
         } else {
             // 读取数据块
-            let block = Rc::new(
-                self.content
-                    .get_content_block(&mut self.reader, &content_block_index)?,
-            );
-            self.block_cache
-                .put(content_block_index.block_offset_in_unit, block.clone());
+            let block =
+                Rc::new(self.content.get_content_block(&mut self.reader, &content_block_index)?);
+            self.block_cache.put(content_block_index.block_offset_in_unit, block.clone());
             block
         };
         Ok(content_block)
@@ -365,9 +352,7 @@ impl<R: Read + Seek> ZdbReader<R> {
 
     pub fn get_index(&mut self, entry_no: EntryNo) -> crate::Result<KeyIndex> {
         let key_block_index = self.key_block_indexes.get_index(entry_no)?;
-        let key_block = self
-            .key_blocks
-            .get_key_block(&mut self.reader, key_block_index)?;
+        let key_block = self.key_blocks.get_key_block(&mut self.reader, key_block_index)?;
         let key_index = key_block.borrow().get_index(entry_no)?;
         Ok(key_index)
     }
@@ -381,10 +366,8 @@ impl<R: Read + Seek> ZdbReader<R> {
             return Ok(LinkedList::new());
         }
         let mut indexes = LinkedList::new();
-        let end_entry_no = min(
-            start_entry_no + max_count as EntryNo,
-            self.get_entry_count() as EntryNo,
-        );
+        let end_entry_no =
+            min(start_entry_no + max_count as EntryNo, self.get_entry_count() as EntryNo);
         for i in start_entry_no..end_entry_no {
             indexes.push_back(self.get_index(i)?);
         }

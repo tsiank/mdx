@@ -35,10 +35,7 @@ pub fn get_encoding_object_by_label(label: &str) -> Result<&'static Encoding> {
     let encoding_obj = Encoding::for_label(lable.as_bytes());
     match encoding_obj {
         Some(encoding_obj) => Ok(encoding_obj),
-        None => Err(ZdbError::invalid_parameter(format!(
-            "Invalid encoding: {}",
-            encoding
-        ))),
+        None => Err(ZdbError::invalid_parameter(format!("Invalid encoding: {}", encoding))),
     }
 }
 
@@ -54,17 +51,9 @@ pub fn get_encoding_object_by_label(label: &str) -> Result<&'static Encoding> {
 /// Returns a byte slice without the null terminator.
 pub fn bytes_from_cstr(cstr: &[u8], is_wchar: bool) -> &[u8] {
     let zero_byte_len: usize = if is_wchar {
-        if cstr.len() > 2 && cstr[cstr.len() - 1] == 0 && cstr[cstr.len() - 2] == 0 {
-            2
-        } else {
-            0
-        }
+        if cstr.len() > 2 && cstr[cstr.len() - 1] == 0 && cstr[cstr.len() - 2] == 0 { 2 } else { 0 }
     } else {
-        if cstr.len() > 1 && cstr[cstr.len() - 1] == 0 {
-            1
-        } else {
-            0
-        } // Ignore ending zero       
+        if cstr.len() > 1 && cstr[cstr.len() - 1] == 0 { 1 } else { 0 } // Ignore ending zero       
     };
     &cstr[0..cstr.len() - zero_byte_len]
 }
@@ -117,10 +106,7 @@ pub fn encode_string_to_bytes(str: &str, encoding_obj: &'static Encoding) -> Res
 ///
 /// Returns the decoded UTF-8 string.
 pub fn decode_bytes_to_string(cstr: &[u8], encoding_obj: &'static Encoding) -> Result<String> {
-    let cstr = bytes_from_cstr(
-        cstr,
-        encoding_obj.name().to_lowercase().starts_with("utf-16"),
-    );
+    let cstr = bytes_from_cstr(cstr, encoding_obj.name().to_lowercase().starts_with("utf-16"));
     let (decoded, _, had_errors) = encoding_obj.decode(cstr);
     if had_errors {
         debug!("Decoding error with: {}", encoding_obj.name());

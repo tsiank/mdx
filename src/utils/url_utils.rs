@@ -74,10 +74,7 @@ pub fn get_decoded_file_name(url: &Url) -> Result<String> {
     // Get the file name from the path
     let file_name = Path::new(path)
         .file_name()
-        .ok_or(ZdbError::invalid_data_format(format!(
-            "Can't find file name in url: {}",
-            url
-        )))?
+        .ok_or(ZdbError::invalid_data_format(format!("Can't find file name in url: {}", url)))?
         .to_str()
         .ok_or(ZdbError::invalid_data_format(format!(
             "Invalid unicode encoding in url: {}",
@@ -115,10 +112,7 @@ pub fn get_decoded_file_stem(url: &Url) -> Result<String> {
     let path = url.path();
     let file_stem = Path::new(path)
         .file_stem()
-        .ok_or(ZdbError::invalid_data_format(format!(
-            "Can't find file stem in url: {}",
-            url
-        )))?
+        .ok_or(ZdbError::invalid_data_format(format!("Can't find file stem in url: {}", url)))?
         .to_str()
         .ok_or(ZdbError::invalid_data_format(format!(
             "Invalid unicode encoding in url: {}",
@@ -283,11 +277,7 @@ mod tests {
             ("/", "new/path", "/new/path"),
             ("/", "/new/path", "/new/path"),
             ("/base/file.txt", "subdir/file.txt", "/base/subdir/file.txt"),
-            (
-                "/base/file.txt",
-                "/subdir/file.txt",
-                "/base/subdir/file.txt",
-            ),
+            ("/base/file.txt", "/subdir/file.txt", "/base/subdir/file.txt"),
             ("/base/", "subdir/file.txt", "/base/subdir/file.txt"),
             ("/base/", "/subdir/file.txt", "/base/subdir/file.txt"),
             ("/file.txt", "new/path", "/new/path"),
@@ -368,11 +358,8 @@ pub fn with_extension(url: &Url, new_ext: &str) -> Result<Url> {
 
         // Get the original path to preserve any special prefixes (like //localhost)
         let original_path = url.path();
-        let path_prefix = if let Some(idx) = original_path.rfind('/') {
-            &original_path[..=idx]
-        } else {
-            "/"
-        };
+        let path_prefix =
+            if let Some(idx) = original_path.rfind('/') { &original_path[..=idx] } else { "/" };
 
         // Construct the new path preserving the original prefix
         let new_path = format!("{}{}", path_prefix, new_last_segment);
@@ -386,13 +373,10 @@ pub fn with_extension(url: &Url, new_ext: &str) -> Result<Url> {
 }
 
 pub fn replace_url_path<P: AsRef<Path>>(url: &Url, path: P) -> Result<Url> {
-    let path_str = path
-        .as_ref()
-        .to_str()
-        .ok_or(ZdbError::invalid_data_format(format!(
-            "Invalid path: {}",
-            path.as_ref().to_string_lossy()
-        )))?;
+    let path_str = path.as_ref().to_str().ok_or(ZdbError::invalid_data_format(format!(
+        "Invalid path: {}",
+        path.as_ref().to_string_lossy()
+    )))?;
     let mut parsed_url = url.clone();
     parsed_url.set_path(path_str);
     Ok(parsed_url)

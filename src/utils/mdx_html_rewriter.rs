@@ -159,10 +159,7 @@ impl MdxHtmlRewriter {
                 // 分离路径和fragment
                 let (path_part, fragment_part) =
                     if let Some(hash_pos) = path_with_fragment.find('#') {
-                        (
-                            &path_with_fragment[..hash_pos],
-                            Some(&path_with_fragment[hash_pos + 1..]),
-                        )
+                        (&path_with_fragment[..hash_pos], Some(&path_with_fragment[hash_pos + 1..]))
                     } else {
                         (path_with_fragment, None)
                     };
@@ -197,9 +194,7 @@ impl MdxHtmlRewriter {
                     "{}/{}?profile_id={}",
                     base_url_trimmed, action, profile_id
                 )) {
-                    result_url
-                        .query_pairs_mut()
-                        .append_pair(param_name, &clean_path);
+                    result_url.query_pairs_mut().append_pair(param_name, &clean_path);
 
                     // 设置fragment（URL库会自动编码）
                     if let Some(frag) = fragment_part {
@@ -232,10 +227,9 @@ impl MdxHtmlRewriter {
             let base_url_trimmed = base_url.trim_end_matches('/');
 
             // 使用URL库构造结果
-            if let Ok(mut result_url) = Url::parse(&format!(
-                "{}/mdd?profile_id={}",
-                base_url_trimmed, profile_id
-            )) {
+            if let Ok(mut result_url) =
+                Url::parse(&format!("{}/mdd?profile_id={}", base_url_trimmed, profile_id))
+            {
                 result_url.query_pairs_mut().append_pair("key", path);
 
                 // 设置fragment
@@ -280,45 +274,21 @@ mod tests {
         // 统一的测试用例数组：(输入URL, 期望输出)
         let test_cases = [
             // 基本协议转换 - entry和source类型去掉根路径"/"，sound和mdd类型保留根路径"/"
-            (
-                "entry://test.html",
-                "mdx://mdict.cn/service/entry?profile_id=123&key=test.html",
-            ),
+            ("entry://test.html", "mdx://mdict.cn/service/entry?profile_id=123&key=test.html"),
             (
                 "entryx://test.html",
                 "mdx://mdict.cn/service/entryx?profile_id=123&entry_no=test.html",
             ),
-            (
-                "sound://test.mp3",
-                "mdx://mdict.cn/service/sound?profile_id=123&key=%2Ftest.mp3",
-            ),
-            (
-                "source://test.txt",
-                "mdx://mdict.cn/service/source?profile_id=123&entry_no=test.txt",
-            ),
+            ("sound://test.mp3", "mdx://mdict.cn/service/sound?profile_id=123&key=%2Ftest.mp3"),
+            ("source://test.txt", "mdx://mdict.cn/service/source?profile_id=123&entry_no=test.txt"),
             // 三斜杠格式处理
-            (
-                "entry:///test.html",
-                "mdx://mdict.cn/service/entry?profile_id=123&key=test.html",
-            ),
-            (
-                "sound:///test.mp3",
-                "mdx://mdict.cn/service/sound?profile_id=123&key=%2Ftest.mp3",
-            ),
+            ("entry:///test.html", "mdx://mdict.cn/service/entry?profile_id=123&key=test.html"),
+            ("sound:///test.mp3", "mdx://mdict.cn/service/sound?profile_id=123&key=%2Ftest.mp3"),
             // mdd类型保留完整编码路径
-            (
-                "file://test.png",
-                "mdx://mdict.cn/service/mdd?profile_id=123&key=%2Ftest.png",
-            ),
-            (
-                "file:///test.png",
-                "mdx://mdict.cn/service/mdd?profile_id=123&key=%2Ftest.png",
-            ),
+            ("file://test.png", "mdx://mdict.cn/service/mdd?profile_id=123&key=%2Ftest.png"),
+            ("file:///test.png", "mdx://mdict.cn/service/mdd?profile_id=123&key=%2Ftest.png"),
             // 相对路径默认为mdd类型
-            (
-                "test.png",
-                "mdx://mdict.cn/service/mdd?profile_id=123&key=%2Ftest.png",
-            ),
+            ("test.png", "mdx://mdict.cn/service/mdd?profile_id=123&key=%2Ftest.png"),
             (
                 "images/test.png",
                 "mdx://mdict.cn/service/mdd?profile_id=123&key=%2Fimages%2Ftest.png",
@@ -403,10 +373,7 @@ mod tests {
         let base_url = "mdx://mdict.cn/service/";
         let css = "background: url('image.png'); background-image: url(\"file://test.jpg\");";
         let expected = "background: url('mdx://mdict.cn/service/mdd?profile_id=123&key=%2Fimage.png'); background-image: url(\"mdx://mdict.cn/service/mdd?profile_id=123&key=%2Ftest.jpg\");";
-        assert_eq!(
-            MdxHtmlRewriter::rewrite_css_urls(css, 123, base_url),
-            expected
-        );
+        assert_eq!(MdxHtmlRewriter::rewrite_css_urls(css, 123, base_url), expected);
     }
 
     #[test]
@@ -536,22 +503,11 @@ mod tests {
     #[test]
     fn test_fragment_only_links_preservation() -> Result<()> {
         // 测试纯fragment链接（#开头）应该原样保留
-        let test_cases = [
-            "#section1",
-            "#chapter-2",
-            "#锚点",
-            "#anchor with spaces",
-            "#",
-            "#123",
-        ];
+        let test_cases = ["#section1", "#chapter-2", "#锚点", "#anchor with spaces", "#", "#123"];
 
         for url in test_cases {
             let result = MdxHtmlRewriter::rewrite_url(url, 123, "mdx://mdict.cn/service/");
-            assert_eq!(
-                url, result,
-                "Fragment-only link '{}' should remain unchanged",
-                url
-            );
+            assert_eq!(url, result, "Fragment-only link '{}' should remain unchanged", url);
         }
 
         // 测试HTML中的fragment链接

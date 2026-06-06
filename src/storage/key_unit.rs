@@ -39,9 +39,7 @@ impl KeyUnit {
     ) -> crate::Result<Self> {
         let key_data_offset = reader.stream_position()?;
         //Skip to the end of data section
-        reader.seek(SeekFrom::Current(
-            key_block_index_unit.key_data_unit_size as i64,
-        ))?;
+        reader.seek(SeekFrom::Current(key_block_index_unit.key_data_unit_size as i64))?;
         let key_count = key_block_index_unit.total_key_count;
         Ok(Self {
             total_key_count: key_count,
@@ -84,14 +82,9 @@ impl KeyUnit {
             return Ok(Rc::clone(key_block));
         }
         reader.seek(SeekFrom::Start(block_offset + self.key_data_offset))?;
-        let key_block = Rc::new(RefCell::new(KeyBlock::from_reader(
-            reader,
-            &self.meta_info,
-            key_block_index,
-        )?));
-        self.block_cache
-            .borrow_mut()
-            .put(block_offset, key_block.clone());
+        let key_block =
+            Rc::new(RefCell::new(KeyBlock::from_reader(reader, &self.meta_info, key_block_index)?));
+        self.block_cache.borrow_mut().put(block_offset, key_block.clone());
         Ok(key_block)
     }
 }

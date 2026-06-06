@@ -46,10 +46,7 @@ impl TryFrom<u8> for CompressionMethod {
             3 => Ok(CompressionMethod::Lzma),
             4 => Ok(CompressionMethod::Bzip2),
             5 => Ok(CompressionMethod::Lz4),
-            _ => Err(ZdbError::invalid_parameter(format!(
-                "Invalid compression method:{}",
-                value
-            ))),
+            _ => Err(ZdbError::invalid_parameter(format!("Invalid compression method:{}", value))),
         }
     }
 }
@@ -113,10 +110,9 @@ impl Compressor for LzoCompressor {
         let error = ctx.compress(data, &mut compressed);
         match error {
             rust_lzo::LZOError::OK => Ok(compressed),
-            _ => Err(ZdbError::compression_error(format!(
-                "LZO compression error: {}",
-                error as u32
-            ))),
+            _ => {
+                Err(ZdbError::compression_error(format!("LZO compression error: {}", error as u32)))
+            }
         }
     }
 

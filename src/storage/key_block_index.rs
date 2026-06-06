@@ -65,11 +65,8 @@ fn read_key<R: Read>(reader: &mut R, meta_info: &MetaUnit) -> Result<Vec<u8>> {
         ZdbVersion::V1 => reader.read_u8()? as usize,
     };
     //V1's key dosen't has a terminating zero
-    let has_terminating_zero = if meta_info.is_v1() {
-        0
-    } else {
-        if meta_info.db_info.is_utf16 { 2 } else { 1 }
-    };
+    let has_terminating_zero =
+        if meta_info.is_v1() { 0 } else { if meta_info.db_info.is_utf16 { 2 } else { 1 } };
 
     //UTF-16 key length is in char count, we need to convert it to byte count
     if meta_info.db_info.is_utf16 {

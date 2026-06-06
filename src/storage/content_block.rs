@@ -44,10 +44,7 @@ impl ContentBlock {
             )?,
             ZdbVersion::V3 => StorageBlock::from_reader_v3(reader, meta_info)?,
         };
-        Ok(Self {
-            block_index: block_index.clone(),
-            block: block_data.data,
-        })
+        Ok(Self { block_index: block_index.clone(), block: block_data.data })
     }
 
     /// Gets a slice of content from this block.

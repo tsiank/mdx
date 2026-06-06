@@ -43,11 +43,7 @@ impl ZdbUnitBuilder {
     /// let builder = ZdbUnitBuilder::from_config(&config);
     /// ```
     pub fn from_config(config: &BuilderConfig) -> Self {
-        Self {
-            config: config.clone(),
-            unit_info: UnitInfoSection::default(),
-            unit_info_pos: 0,
-        }
+        Self { config: config.clone(), unit_info: UnitInfoSection::default(), unit_info_pos: 0 }
     }
 
     /// Begins writing a new unit to the writer.
@@ -162,10 +158,7 @@ impl ZdbUnitBuilder {
                 )?;
             }
             UnitType::ContentBlockIndex => {
-                let data_info = ContentBlockIndexDataInfo {
-                    record_count: count,
-                    encoding,
-                };
+                let data_info = ContentBlockIndexDataInfo { record_count: count, encoding };
                 write_data_info_section(
                     writer,
                     &data_info,
@@ -175,10 +168,7 @@ impl ZdbUnitBuilder {
                 )?;
             }
             UnitType::Content => {
-                let data_info = ContentDataInfo {
-                    record_count: count,
-                    encoding,
-                };
+                let data_info = ContentDataInfo { record_count: count, encoding };
                 write_data_info_section(
                     writer,
                     &data_info,

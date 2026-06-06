@@ -91,10 +91,7 @@ pub fn file_url_exists(url: &Url) -> bool {
 /// Returns an error if the URL scheme is not "file" or the file cannot be opened.
 pub fn open_file_url_as_reader(url: &Url) -> Result<BufReader<std::fs::File>> {
     if url.scheme() != "file" {
-        return Err(ZdbError::invalid_data_format(format!(
-            "Unsupported scheme: {}",
-            url.scheme()
-        )));
+        return Err(ZdbError::invalid_data_format(format!("Unsupported scheme: {}", url.scheme())));
     }
     let path = fix_windows_path_buf(url_utils::get_decoded_path(url)?);
     let file = File::open(path)?;
@@ -180,10 +177,7 @@ pub fn scan_dir<P: AsRef<Path>>(
     let walker = if recursive {
         WalkDir::new(&target_dir).follow_links(true).into_iter()
     } else {
-        WalkDir::new(&target_dir)
-            .follow_links(true)
-            .max_depth(1)
-            .into_iter()
+        WalkDir::new(&target_dir).follow_links(true).max_depth(1).into_iter()
     };
 
     for entry in walker {

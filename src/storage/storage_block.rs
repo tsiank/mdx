@@ -46,17 +46,9 @@ impl StorageBlock {
         let mut raw_data = read_exact_to_vec(reader, data_block_length as usize)?;
         if meta_info.is_v2() {
             let crypto_key = ripemd_digest(ripemd_digest(crypto_key)?.as_slice())?;
-            Self::decode_block(
-                raw_data.as_mut_slice(),
-                &crypto_key,
-                original_data_length,
-            )
+            Self::decode_block(raw_data.as_mut_slice(), &crypto_key, original_data_length)
         } else {
-            Self::decode_block(
-                raw_data.as_mut_slice(),
-                crypto_key,
-                original_data_length,
-            )
+            Self::decode_block(raw_data.as_mut_slice(), crypto_key, original_data_length)
         }
     }
 
@@ -160,10 +152,7 @@ impl StorageBlock {
 
         if will_encrypt {
             let mut encrypted_data = vec![0u8; encrypted_data_length];
-            encryptor.encrypt(
-                &compressed_data[0..encrypted_data_length],
-                &mut encrypted_data,
-            )?;
+            encryptor.encrypt(&compressed_data[0..encrypted_data_length], &mut encrypted_data)?;
             compressed_data[0..encrypted_data.len()].copy_from_slice(&encrypted_data); //Replace with encrypted data
         } else {
             encrypted_data_length = 0;

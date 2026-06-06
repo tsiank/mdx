@@ -324,11 +324,7 @@ impl ZDBBuilder {
         //locale_id.push_str("-kc-true-kf-upper"); //Force to sort uppercase first, Just to make the display order more consistent
         let collator = UCollator::try_from(locale_id.as_str())?;
         debug!("Sorting entries by locale: {}", locale_id);
-        self.entries.sort_by(|a, b| {
-            collator
-                .strcoll_utf8(a.key.as_str(), b.key.as_str())
-                .unwrap()
-        });
+        self.entries.sort_by(|a, b| collator.strcoll_utf8(a.key.as_str(), b.key.as_str()).unwrap());
         debug!("Sorting entries by locale: done");
         Ok(())
     }

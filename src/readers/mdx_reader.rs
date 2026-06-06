@@ -121,17 +121,19 @@ impl MdxReader {
             ZdbReader::<BufReader<File>>::from_reader(reader, device_id, &license_data)?;
 
         // Try to initialize data_db, but allow it to fail
-        let data_db =
-            match MddReader::from_url(&with_extension(&mdx_url, MDICT_MDD_EXT)?, device_id) {
-                Ok(db) => Some(db),
-                Err(e) => {
-                    warn!(
+        let data_db = match MddReader::from_url(
+            &with_extension(&mdx_url, MDICT_MDD_EXT)?,
+            device_id,
+        ) {
+            Ok(db) => Some(db),
+            Err(e) => {
+                warn!(
                     "Failed to load MDD data database: {}. Data resources will not be available.",
                     e
                 );
-                    None
-                }
-            };
+                None
+            }
+        };
 
         let db_name = url_utils::get_decoded_file_stem(&mdx_url)?;
         let compact_stylesheet =
@@ -141,21 +143,12 @@ impl MdxReader {
         let fts_index = match Self::load_fts_index(&with_extension(&mdx_url, MDICT_INDEX_EXT)?) {
             Ok(index) => Some(index),
             Err(e) => {
-                info!(
-                    "Failed to load FTS index: {}. Full-text search will not be available.",
-                    e
-                );
+                info!("Failed to load FTS index: {}. Full-text search will not be available.", e);
                 None
             }
         };
-        let mdx_reader = Self {
-            content_db,
-            data_db,
-            fts_index,
-            db_name,
-            mdx_url,
-            compact_stylesheet,
-        };
+        let mdx_reader =
+            Self { content_db, data_db, fts_index, db_name, mdx_url, compact_stylesheet };
         Ok(mdx_reader)
     }
 
@@ -254,9 +247,7 @@ impl MdxReader {
                 Ok(buffer)
             }
             ContentType::Html => self.get_string(key_index, true),
-            _ => Err(ZdbError::invalid_data_format(
-                "Db content type is not supported",
-            )),
+            _ => Err(ZdbError::invalid_data_format("Db content type is not supported")),
         }
     }
 
@@ -316,15 +307,9 @@ impl MdxReader {
     pub fn get_data(&mut self, file_path: &str) -> Result<Option<(Vec<u8>, String)>> {
         // Handle data database lookup
         if self.data_db.is_some() {
-            let buffer = self
-                .data_db
-                .as_mut()
-                .unwrap()
-                .get_data_by_path(file_path, true)?;
+            let buffer = self.data_db.as_mut().unwrap().get_data_by_path(file_path, true)?;
             if let Some(buffer) = buffer {
-                let mime_type = MimeGuess::from_path(file_path)
-                    .first_or_octet_stream()
-                    .to_string();
+                let mime_type = MimeGuess::from_path(file_path).first_or_octet_stream().to_string();
                 return Ok(Some((buffer, mime_type)));
             }
         }
@@ -342,8 +327,7 @@ impl MdxReader {
         partial_match: bool,
         best_match: bool,
     ) -> Result<Option<KeyIndex>> {
-        self.content_db
-            .find_first_match(key, prefix_match, partial_match, best_match)
+        self.content_db.find_first_match(key, prefix_match, partial_match, best_match)
     }
 
     pub fn get_similar_indexes(
@@ -352,8 +336,7 @@ impl MdxReader {
         start_with: bool,
         max_count: u64,
     ) -> Result<LinkedList<KeyIndex>> {
-        self.content_db
-            .get_similar_indexes(key_index, start_with, max_count)
+        self.content_db.get_similar_indexes(key_index, start_with, max_count)
     }
 
     // Load compact stylesheet triples: token, prefix, suffix (newline-separated)
@@ -507,9 +490,7 @@ impl MdxReader {
 
             Ok(results)
         } else {
-            Err(ZdbError::general_error(
-                "Full-text search index is not available".to_string(),
-            ))
+            Err(ZdbError::general_error("Full-text search index is not available".to_string()))
         }
     }
 

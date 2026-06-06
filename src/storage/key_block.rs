@@ -134,10 +134,7 @@ fn key_str_from_cursor(
         }
     }
     let key_bytes = &cursor.get_ref()[start_pos as usize..end_pos as usize];
-    Ok((
-        decode_bytes_to_string(key_bytes, meta_info.encoding_obj)?,
-        key_bytes.to_vec(),
-    ))
+    Ok((decode_bytes_to_string(key_bytes, meta_info.encoding_obj)?, key_bytes.to_vec()))
 }
 
 impl KeyBlock {

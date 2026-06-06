@@ -25,8 +25,7 @@ use crate::{Result, ZdbError};
 
 /// Checks if two bytes form a valid Big5 character.
 pub fn is_big5(c1: u8, c2: u8) -> bool {
-    (0xa1..=0xf9).contains(&c1)
-        && ((0x40..=0x7e).contains(&c2) || (0xa1..=0xfe).contains(&c2))
+    (0xa1..=0xf9).contains(&c1) && ((0x40..=0x7e).contains(&c2) || (0xa1..=0xfe).contains(&c2))
 }
 
 /// Checks if two bytes form a valid GBK character.
@@ -68,12 +67,11 @@ pub fn mb_get_sort_key(
                 continue;
             }
         }
-        if fold_case
-            && ch.is_ascii_uppercase() {
-                ch = ch - b'A' + b'a';
-                folded_key.push(ch);
-                continue;
-            }
+        if fold_case && ch.is_ascii_uppercase() {
+            ch = ch - b'A' + b'a';
+            folded_key.push(ch);
+            continue;
+        }
         if alpha_and_digit_only {
             if ch.is_ascii_alphabetic() || ch.is_ascii_digit() || ch > 127 {
                 folded_key.push(ch);
@@ -102,9 +100,7 @@ pub fn wc_get_sort_key(
     alpha_and_digit_only: bool,
 ) -> Result<Vec<u8>> {
     if !wc_str.len().is_multiple_of(2) {
-        return Err(ZdbError::invalid_data_format(
-            "Wide char string length must be even",
-        ));
+        return Err(ZdbError::invalid_data_format("Wide char string length must be even"));
     }
     let mut folded_key = Vec::with_capacity(wc_str.len());
     let mut cursor_in = Cursor::new(wc_str);
@@ -113,12 +109,11 @@ pub fn wc_get_sort_key(
         let wc = cursor_in.read_u16::<LittleEndian>()?;
         if wc <= 0xff {
             let mut ch = wc as u8;
-            if fold_case
-                && ch.is_ascii_uppercase() {
-                    ch = ch - b'A' + b'a';
-                    cursor_out.write_u16::<NativeEndian>(ch as u16)?;
-                    continue;
-                }
+            if fold_case && ch.is_ascii_uppercase() {
+                ch = ch - b'A' + b'a';
+                cursor_out.write_u16::<NativeEndian>(ch as u16)?;
+                continue;
+            }
             if alpha_and_digit_only {
                 if ch.is_ascii_alphabetic() || ch.is_ascii_digit() || ch > 127 {
                     cursor_out.write_u16::<NativeEndian>(ch as u16)?;
@@ -143,12 +138,7 @@ pub fn get_sort_key(key: &[u8], meta_info: &MetaUnit) -> Result<Vec<u8>> {
         if meta_info.db_info.is_utf16 {
             wc_get_sort_key(key, fold_case, alpha_and_digit_only)
         } else {
-            mb_get_sort_key(
-                key,
-                fold_case,
-                alpha_and_digit_only,
-                &meta_info.db_info.encoding_label,
-            )
+            mb_get_sort_key(key, fold_case, alpha_and_digit_only, &meta_info.db_info.encoding_label)
         }
     }
 }

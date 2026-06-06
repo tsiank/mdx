@@ -117,10 +117,7 @@ impl ContentType {
             "text" => Ok(ContentType::Text),
             "html" => Ok(ContentType::Html),
             "binary" => Ok(ContentType::Binary),
-            _ => Err(ZdbError::invalid_data_format(format!(
-                "Unsupported content type:{}",
-                s
-            ))),
+            _ => Err(ZdbError::invalid_data_format(format!("Unsupported content type:{}", s))),
         }
     }
 }
@@ -147,9 +144,7 @@ impl TryFrom<u32> for KeyBlockIndexEncrytionType {
             1 => Ok(KeyBlockIndexEncrytionType::IndexPara),
             2 => Ok(KeyBlockIndexEncrytionType::IndexData),
             3 => Ok(KeyBlockIndexEncrytionType::ParaAndData),
-            _ => Err(ZdbError::invalid_data_format(
-                "Invalid value for EncryptionType",
-            )),
+            _ => Err(ZdbError::invalid_data_format("Invalid value for EncryptionType")),
         }
     }
 }
@@ -265,9 +260,7 @@ fn get_node_attr_bool(attrs: &[(String, String)], key: &str, default: bool) -> b
 }
 
 fn get_node_attr_u32(attrs: &[(String, String)], key: &str) -> u32 {
-    get_node_attr_str(attrs, key)
-        .parse::<u32>()
-        .unwrap_or_default()
+    get_node_attr_str(attrs, key).parse::<u32>().unwrap_or_default()
 }
 
 fn generate_locale_id(encoding_label: &str, key_case_sensitive: bool, strip_key: bool) -> String {
@@ -344,9 +337,7 @@ impl DbInfo {
                     }
                 }
                 Event::Eof => {
-                    return Err(ZdbError::invalid_data_format(
-                        "No root element found in XML",
-                    ));
+                    return Err(ZdbError::invalid_data_format("No root element found in XML"));
                 }
                 _ => continue,
             }
@@ -360,9 +351,8 @@ impl DbInfo {
                 .unwrap_or_default()
                 * 100.0) as u32,
         )?;
-        db_info.encryption_type = get_node_attr_u32(&root_attrs, "Encrypted")
-            .try_into()
-            .unwrap_or_default();
+        db_info.encryption_type =
+            get_node_attr_u32(&root_attrs, "Encrypted").try_into().unwrap_or_default();
         db_info.uuid = get_node_attr_str(&root_attrs, "UUID");
 
         let mut content_type = if db_info.version != ZdbVersion::V3 {
@@ -374,11 +364,7 @@ impl DbInfo {
             content_type = "binary".to_string();
         }
         db_info.content_type = ContentType::from_str(&content_type)?;
-        db_info.is_mdd = if let ContentType::Binary = db_info.content_type {
-            true
-        } else {
-            false
-        };
+        db_info.is_mdd = if let ContentType::Binary = db_info.content_type { true } else { false };
 
         db_info.locale_id = get_node_attr_str(&root_attrs, "DefaultSortingLocale");
         db_info.embedded_reg_code = get_node_attr_str(&root_attrs, "RegCode");
@@ -443,10 +429,7 @@ fn read_cstr_with_crc<R: Read>(reader: &mut R) -> Result<String> {
     reader.read_exact(&mut data)?;
     let crc = reader.read_u32::<BigEndian>()?;
     if crc != adler::adler32_slice(&data).to_be() {
-        return Err(ZdbError::crc_mismatch(
-            crc,
-            adler::adler32_slice(&data).to_be(),
-        ));
+        return Err(ZdbError::crc_mismatch(crc, adler::adler32_slice(&data).to_be()));
     }
     if data.len() > 1 {
         //if data is utf-16le, return utf-16le string
@@ -479,11 +462,8 @@ impl MetaUnit {
         //debug!("Zdb raw header:{}",raw_xml);
         let db_info: DbInfo = DbInfo::from_xml(&raw_xml)?;
         let version = db_info.version;
-        let db_reg_code = if license_data.is_empty() {
-            &db_info.embedded_reg_code
-        } else {
-            license_data
-        };
+        let db_reg_code =
+            if license_data.is_empty() { &db_info.embedded_reg_code } else { license_data };
         if db_reg_code.is_empty() && db_info.encryption_type.is_para_encrypted() {
             return Err(ZdbError::invalid_data_format(
                 "DB needs registration but no license data is provided",
@@ -492,15 +472,9 @@ impl MetaUnit {
 
         let crypto_key = if !db_reg_code.is_empty() {
             let encrypted_key = hex::decode(db_reg_code).map_err(|e| {
-                ZdbError::invalid_data_format(format!(
-                    "Failed to convert hex str:{}",
-                    e
-                ))
+                ZdbError::invalid_data_format(format!("Failed to convert hex str:{}", e))
             })?;
-            decrypt_salsa20(
-                &encrypted_key,
-                ripemd_digest(device_id.as_bytes())?.as_slice(),
-            )?
+            decrypt_salsa20(&encrypted_key, ripemd_digest(device_id.as_bytes())?.as_slice())?
         } else {
             if version == ZdbVersion::V3 {
                 fast_hash_digest(db_info.uuid.as_bytes())?

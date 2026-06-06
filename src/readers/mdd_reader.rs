@@ -128,11 +128,7 @@ impl MddReader {
                 zdb_readers.push_back(zdb_reader);
             }
         }
-        Ok(Self {
-            mdd_base_url,
-            _db_name: db_name,
-            zdb_readers: RefCell::new(zdb_readers),
-        })
+        Ok(Self { mdd_base_url, _db_name: db_name, zdb_readers: RefCell::new(zdb_readers) })
     }
 
     /// Gets resource data by file path, with optional override capability.

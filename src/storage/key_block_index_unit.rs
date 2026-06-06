@@ -75,24 +75,18 @@ impl KeyBlockIndexUnit {
 }
 
 impl KeyBlockIndexUnit {
-    /// 公共解码和编号分配逻辑
-
+    /// Public decoding and numbering logic
     fn read_idx_para_v1_v2<R: Read + Seek>(
         reader: &mut R,
         meta_info: &MetaUnit,
     ) -> Result<Vec<u8>> {
-        let mut idx_para = if meta_info.is_v2() {
-            vec![0; 8 * 5]
-        } else {
-            vec![0; 4 * 4]
-        };
+        let mut idx_para = if meta_info.is_v2() { vec![0; 8 * 5] } else { vec![0; 4 * 4] };
         reader.read_exact(&mut idx_para)?;
         if meta_info.is_v2() {
             if !meta_info.crypto_key.is_empty()
                 && meta_info.db_info.encryption_type.is_para_encrypted()
             {
-                let mut decryptor =
-                    Salsa20Encryptor::new(meta_info.crypto_key.as_slice(), &[0; 8]);
+                let mut decryptor = Salsa20Encryptor::new(meta_info.crypto_key.as_slice(), &[0; 8]);
                 let mut decrypted_idx_para = vec![0; idx_para.len()];
                 decryptor.decrypt(&idx_para, &mut decrypted_idx_para)?;
                 idx_para = decrypted_idx_para;

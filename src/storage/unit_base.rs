@@ -32,10 +32,7 @@ impl TryFrom<u8> for UnitType {
             2 => Ok(UnitType::ContentBlockIndex),
             3 => Ok(UnitType::Key),
             4 => Ok(UnitType::KeyBlockIndex),
-            _ => Err(ZdbError::invalid_parameter(format!(
-                "Invalid unit type:{}",
-                value
-            ))),
+            _ => Err(ZdbError::invalid_parameter(format!("Invalid unit type:{}", value))),
         }
     }
 }

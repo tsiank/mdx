@@ -45,10 +45,7 @@ impl ReadAt for std::fs::File {
         }
 
         if !buf.is_empty() {
-            Err(io::Error::new(
-                io::ErrorKind::UnexpectedEof,
-                "failed to fill whole buffer",
-            ))
+            Err(io::Error::new(io::ErrorKind::UnexpectedEof, "failed to fill whole buffer"))
         } else {
             Ok(())
         }
@@ -81,23 +78,16 @@ impl ZipDirectory {
         let mut entries = HashMap::new();
         for i in 0..archive.len() {
             if let Ok(entry) = archive.by_index(i)
-                && !entry.is_dir() && entry.compression() == zip::CompressionMethod::Stored
-                    && let Some(offset) = entry.data_start() {
-                        let name = entry.name().to_string();
-                        entries.insert(
-                            name,
-                            ZipEntryInfo {
-                                offset,
-                                size: entry.size(),
-                            },
-                        );
-                    }
+                && !entry.is_dir()
+                && entry.compression() == zip::CompressionMethod::Stored
+                && let Some(offset) = entry.data_start()
+            {
+                let name = entry.name().to_string();
+                entries.insert(name, ZipEntryInfo { offset, size: entry.size() });
+            }
         }
 
-        Ok(Self {
-            file: Arc::new(file),
-            entries: Arc::new(entries),
-        })
+        Ok(Self { file: Arc::new(file), entries: Arc::new(entries) })
     }
 
     fn get_entry_info(&self, path: &Path) -> Result<ZipEntryInfo> {
@@ -129,18 +119,14 @@ impl ZipFileHandle {
 impl FileHandle for ZipFileHandle {
     fn read_bytes(&self, range: std::ops::Range<usize>) -> io::Result<directory::OwnedBytes> {
         if range.end > self.entry_info.size as usize {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Range exceeds file size",
-            ));
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Range exceeds file size"));
         }
 
         let len = range.end - range.start;
         let mut buffer = vec![0u8; len];
 
         // This now uses our cross-platform ReadAt trait
-        self.file
-            .read_exact_at(&mut buffer, self.entry_info.offset + range.start as u64)?;
+        self.file.read_exact_at(&mut buffer, self.entry_info.offset + range.start as u64)?;
 
         Ok(directory::OwnedBytes::new(buffer))
     }

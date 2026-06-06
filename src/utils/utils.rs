@@ -144,10 +144,11 @@ pub fn simple_xml_to_json(xml: &str) -> Result<serde_json::Value> {
 
 pub fn remove_xml_declaration(xml: &mut String) {
     if xml.starts_with("<?xml")
-        && let Some(end) = xml.find("?>") {
-            //remove XML declaration
-            *xml = xml[end + 2..].trim_start().to_string();
-        }
+        && let Some(end) = xml.find("?>")
+    {
+        //remove XML declaration
+        *xml = xml[end + 2..].trim_start().to_string();
+    }
 }
 
 // Trait for comparison operations
@@ -167,11 +168,8 @@ pub trait RandomAccessable<T: KeyComparable> {
 //compare the first sort key with the second sort key
 //if prefix_match is true and second sort key start with first sort key, return equal
 pub fn sort_key_compare(first: &[u8], second: &[u8], start_with: bool) -> Result<Ordering> {
-    let first = if start_with && first.len() > second.len() {
-        &first[..second.len()]
-    } else {
-        first
-    };
+    let first =
+        if start_with && first.len() > second.len() { &first[..second.len()] } else { first };
     Ok(first.cmp(second))
 }
 
@@ -376,10 +374,7 @@ pub fn extract_text_from_html(html: &str) -> Result<String> {
     let final_text = text_content.into_inner();
 
     // Clean up whitespace
-    let cleaned = final_text
-        .split_whitespace()
-        .collect::<Vec<&str>>()
-        .join(" ");
+    let cleaned = final_text.split_whitespace().collect::<Vec<&str>>().join(" ");
 
     Ok(cleaned)
 }

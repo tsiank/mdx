@@ -42,12 +42,8 @@ impl ZdbLoader {
             ZdbReader::<BufReader<File>>::from_file(source_file, device_id, license_key)?;
         let mut entry_records =
             Vec::<ZdbRecord>::with_capacity(zdb_reader.get_entry_count() as usize);
-        let mut progress_state = ProgressState::new(
-            "ZdbLoader::new",
-            zdb_reader.get_entry_count(),
-            5,
-            prog_rpt,
-        );
+        let mut progress_state =
+            ProgressState::new("ZdbLoader::new", zdb_reader.get_entry_count(), 5, prog_rpt);
         let compact_stylesheet =
             MdxReader::load_compact_stylesheet(&zdb_reader.meta.db_info.style_sheet)?;
 
@@ -73,12 +69,6 @@ impl ZdbLoader {
                 return Err(ZdbError::user_interrupted());
             }
         }
-        Ok((
-            ZdbLoader {
-                input_reader: zdb_reader,
-                compact_stylesheet,
-            },
-            entry_records,
-        ))
+        Ok((ZdbLoader { input_reader: zdb_reader, compact_stylesheet }, entry_records))
     }
 }
