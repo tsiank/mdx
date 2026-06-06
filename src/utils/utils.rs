@@ -74,14 +74,19 @@ pub fn move_element<T>(list: &mut LinkedList<T>, pos: usize, new_pos: usize) {
     // 1. Remove the element at position pos
     let mut removed = None;
     for i in 0..len {
-        let v = list.pop_front().unwrap();
+        let Some(v) = list.pop_front() else {
+            break;
+        };
         if i == pos {
             removed = Some(v);
         } else {
             list.push_back(v);
         }
     }
-    let mut elem = Some(removed.unwrap());
+    let Some(removed) = removed else {
+        return;
+    };
+    let mut elem = Some(removed);
 
     // 2. Calculate insertion position (move to after new_pos element)
     let mut insert_pos = new_pos + 1;
@@ -95,11 +100,14 @@ pub fn move_element<T>(list: &mut LinkedList<T>, pos: usize, new_pos: usize) {
     // 3. Insert at insert_pos
     let new_len = list.len();
     for i in 0..=new_len {
-        if i == insert_pos {
-            list.push_back(elem.take().unwrap());
+        if i == insert_pos
+            && let Some(value) = elem.take()
+        {
+            list.push_back(value);
         }
-        if i < new_len {
-            let v = list.pop_front().unwrap();
+        if i < new_len
+            && let Some(v) = list.pop_front()
+        {
             list.push_back(v);
         }
     }

@@ -86,6 +86,7 @@
 //! # }
 //! ```
 
+use std::cmp::Ordering;
 use std::io::{Seek, Write};
 
 use byteorder::{BigEndian, LittleEndian, WriteBytesExt};
@@ -324,7 +325,20 @@ impl ZDBBuilder {
         //locale_id.push_str("-kc-true-kf-upper"); //Force to sort uppercase first, Just to make the display order more consistent
         let collator = UCollator::try_from(locale_id.as_str())?;
         debug!("Sorting entries by locale: {}", locale_id);
-        self.entries.sort_by(|a, b| collator.strcoll_utf8(a.key.as_str(), b.key.as_str()).unwrap());
+        let mut compare_error: Option<ZdbError> = None;
+        self.entries.sort_by(|a, b| {
+            match collator.strcoll_utf8(a.key.as_str(), b.key.as_str()) {
+                Ok(ordering) => ordering,
+                Err(e) => {
+                    // Record the first error and keep the order stable; reported after the sort.
+                    compare_error.get_or_insert(e);
+                    Ordering::Equal
+                }
+            }
+        });
+        if let Some(e) = compare_error {
+            return Err(e);
+        }
         debug!("Sorting entries by locale: done");
         Ok(())
     }

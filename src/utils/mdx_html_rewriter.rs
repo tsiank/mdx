@@ -247,9 +247,18 @@ impl MdxHtmlRewriter {
 
     /// 重写CSS中的url()引用
     pub fn rewrite_css_urls(css: &str, profile_id: i32, base_url: &str) -> String {
+        use std::sync::LazyLock;
+
         use regex::Regex;
 
-        let url_regex = Regex::new(r#"url\s*\(\s*(['"]?)([^'")]+)(['"]?)\s*\)"#).unwrap();
+        static URL_REGEX: LazyLock<Option<Regex>> =
+            LazyLock::new(|| Regex::new(r#"url\s*\(\s*(['"]?)([^'")]+)(['"]?)\s*\)"#).ok());
+
+        let Some(url_regex) = URL_REGEX.as_ref() else {
+            // The pattern is a compile-time constant and always builds; if it ever
+            // did not, leave the CSS url() references untouched rather than panic.
+            return css.to_string();
+        };
 
         url_regex
             .replace_all(css, |caps: &regex::Captures| {

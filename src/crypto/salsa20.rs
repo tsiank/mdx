@@ -51,7 +51,7 @@ fn u32_to_u8_little(output: &mut [u8], input: u32) {
 /// Converts little-endian bytes to a 32-bit value.
 #[inline]
 fn u8_to_u32_little(input: &[u8]) -> u32 {
-    u32::from_le_bytes(input[..4].try_into().unwrap())
+    u32::from_le_bytes([input[0], input[1], input[2], input[3]])
 }
 
 fn salsa20_word_to_byte(output: &mut [u8; 64], input: &[u32; 16]) {

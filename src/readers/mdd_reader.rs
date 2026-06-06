@@ -55,7 +55,11 @@ pub struct MddReader {
 impl Default for MddReader {
     fn default() -> Self {
         Self {
-            mdd_base_url: Url::parse("file:///").unwrap(),
+            mdd_base_url: match Url::parse("file:///") {
+                Ok(url) => url,
+                // "file:///" is a hardcoded, valid base URL, so parsing cannot fail.
+                Err(_) => unreachable!(),
+            },
             _db_name: String::new(),
             zdb_readers: RefCell::new(LinkedList::new()),
         }
@@ -172,10 +176,11 @@ impl MddReader {
     ///
     /// Returns `Some(data)` if found, `None` if not found.
     pub fn get_data_by_key(&mut self, file_path: &str) -> Result<Option<Vec<u8>>> {
-        if self.zdb_readers.borrow().front().is_none() {
-            return Ok(None);
-        }
-        let actual_file_path = if !self.zdb_readers.borrow().front().unwrap().meta.is_v3() {
+        let is_v3 = match self.zdb_readers.borrow().front() {
+            Some(reader) => reader.meta.is_v3(),
+            None => return Ok(None),
+        };
+        let actual_file_path = if !is_v3 {
             // Convert unix path to windows path
             file_path.replace("/", "\\")
         } else {

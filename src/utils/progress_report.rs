@@ -98,12 +98,12 @@ impl ProgressState {
     ///
     /// Returns `true` if the operation should be cancelled, `false` otherwise.
     pub fn report(&mut self, current: u64) -> bool {
-        if self.reporter.is_none() {
+        let Some(reporter) = self.reporter else {
             return false;
-        }
+        };
         if (current - self.last) > self.report_interval || current == self.total - 1 {
             self.current = current;
-            let cancelled = (self.reporter.unwrap())(self);
+            let cancelled = reporter(self);
             self.last = current;
             cancelled
         } else {

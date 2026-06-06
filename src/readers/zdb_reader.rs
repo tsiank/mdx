@@ -125,7 +125,7 @@ impl<R: Read + Seek> ZdbReader<R> {
             key_blocks,
             key_block_indexes,
             reader,
-            block_cache: LruCache::new(NonZeroUsize::new(10).unwrap()),
+            block_cache: LruCache::new(NonZeroUsize::new(10).unwrap_or(NonZeroUsize::MIN)),
         })
     }
 
@@ -157,7 +157,7 @@ impl<R: Read + Seek> ZdbReader<R> {
             key_blocks: entry_keys,
             key_block_indexes: key_block_index,
             reader,
-            block_cache: LruCache::new(NonZeroUsize::new(10).unwrap()),
+            block_cache: LruCache::new(NonZeroUsize::new(10).unwrap_or(NonZeroUsize::MIN)),
         })
     }
 

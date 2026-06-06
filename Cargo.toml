@@ -95,3 +95,17 @@ rust_icu_ustring = { version = "^5.0.0", default-features = false, features = [
     "renaming",
     "icu_version_in_env",
 ], optional = true }
+
+[lints.clippy]
+# Enable the pedantic group for suspect code
+#pedantic = "warn"
+
+# Explicitly warn on panic-inducing patterns
+unwrap_used = "deny"
+expect_used = "deny"
+#panic = "warn"
+#indexing_slicing = "warn"
+todo = "warn"
+unimplemented = "warn"
+#unreachable = "warn"
+fallible_impl_from = "warn"

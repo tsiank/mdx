@@ -28,7 +28,9 @@ impl DataDirLoader {
         // Scan for all files in the directory
         let dir_path = Path::new(&source_dir);
         let mut files = LinkedList::<PathBuf>::new();
-        let pattern = regex::Regex::new(r".*").unwrap(); // Match all files
+        // Match all files
+        let pattern = regex::Regex::new(r".*")
+            .map_err(|e| ZdbError::general_error(format!("Failed to compile file match pattern: {}", e)))?;
         scan_dir(dir_path, &pattern, true, &mut files)?; // recursive scan
 
         log::debug!("Found {} files to pack", files.len());

@@ -92,12 +92,13 @@ pub fn make_index(file_path: &PathBuf, prog_rpt: Option<ProgressReportFn>) -> Re
         // Get the index and content for this entry
         let key_index = mdx_reader.get_index(entry_no as EntryNo)?;
 
-        let result = mdx_reader.get_html(&key_index);
-        if let Err(e) = result {
-            warn!("Failed to get HTML content for entry {}: {}", entry_no, e);
-            continue;
-        }
-        let html_content = result.unwrap();
+        let html_content = match mdx_reader.get_html(&key_index) {
+            Ok(content) => content,
+            Err(e) => {
+                warn!("Failed to get HTML content for entry {}: {}", entry_no, e);
+                continue;
+            }
+        };
 
         // Extract text from HTML
         let text_content = crate::utils::utils::extract_text_from_html(&html_content)?;

@@ -43,7 +43,7 @@ impl KeyUnit {
         let key_count = key_block_index_unit.total_key_count;
         Ok(Self {
             total_key_count: key_count,
-            block_cache: RefCell::new(LruCache::new(NonZeroUsize::new(16).unwrap())),
+            block_cache: RefCell::new(LruCache::new(NonZeroUsize::new(16).unwrap_or(NonZeroUsize::MIN))),
             meta_info: meta_info.clone(),
             key_data_offset,
         })
@@ -66,7 +66,7 @@ impl KeyUnit {
         let key_count = data_info.key_count;
         Ok(Self {
             total_key_count: key_count,
-            block_cache: RefCell::new(LruCache::new(NonZeroUsize::new(16).unwrap())),
+            block_cache: RefCell::new(LruCache::new(NonZeroUsize::new(16).unwrap_or(NonZeroUsize::MIN))),
             meta_info: meta_info.clone(),
             key_data_offset,
         })
