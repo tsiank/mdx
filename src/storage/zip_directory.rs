@@ -80,9 +80,9 @@ impl ZipDirectory {
 
         let mut entries = HashMap::new();
         for i in 0..archive.len() {
-            if let Ok(entry) = archive.by_index(i) {
-                if !entry.is_dir() && entry.compression() == zip::CompressionMethod::Stored {
-                    if let Some(offset) = entry.data_start() {
+            if let Ok(entry) = archive.by_index(i)
+                && !entry.is_dir() && entry.compression() == zip::CompressionMethod::Stored
+                    && let Some(offset) = entry.data_start() {
                         let name = entry.name().to_string();
                         entries.insert(
                             name,
@@ -92,8 +92,6 @@ impl ZipDirectory {
                             },
                         );
                     }
-                }
-            }
         }
 
         Ok(Self {

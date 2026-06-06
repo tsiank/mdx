@@ -323,15 +323,12 @@ pub fn html_escape_mdx_text(mdx_text: &str, escaped_text: &mut String) {
             '"' => {
                 escaped_text.push_str("&quot;");
             }
-            '\\' => {
+            '\\'
                 // Check for "\n"
-                if i + 1 < chars.len() && chars[i + 1] == 'n' {
+                if i + 1 < chars.len() && chars[i + 1] == 'n' => {
                     escaped_text.push_str("<br>");
                     i += 1; // Skip the 'n' character
-                } else {
-                    escaped_text.push(ch);
                 }
-            }
             _ => {
                 escaped_text.push(ch);
             }
