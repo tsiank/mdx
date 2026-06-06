@@ -306,8 +306,8 @@ impl MdxReader {
 
     pub fn get_data(&mut self, file_path: &str) -> Result<Option<(Vec<u8>, String)>> {
         // Handle data database lookup
-        if self.data_db.is_some() {
-            let buffer = self.data_db.as_mut().unwrap().get_data_by_path(file_path, true)?;
+        if let Some(data_db) = &mut self.data_db {
+            let buffer = data_db.get_data_by_path(file_path, true)?;
             if let Some(buffer) = buffer {
                 let mime_type = MimeGuess::from_path(file_path).first_or_octet_stream().to_string();
                 return Ok(Some((buffer, mime_type)));

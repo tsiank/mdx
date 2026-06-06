@@ -349,9 +349,11 @@ impl ZDBBuilder {
 
         while i < total {
             let mut block_size: u64 = 0;
-            let mut key_block_index = KeyBlockIndex::default();
-            key_block_index.first_key = self.entries[i].key.clone();
-            key_block_index.first_entry_no_in_block = i as EntryNo;
+            let mut key_block_index = KeyBlockIndex {
+                first_key: self.entries[i].key.clone(),
+                first_entry_no_in_block: i as EntryNo,
+                ..Default::default()
+            };
 
             let start = i;
             while i < total {

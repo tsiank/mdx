@@ -23,6 +23,7 @@
 
 use std::io::{Read, Seek};
 use std::rc::Rc;
+use std::str::FromStr;
 
 use byteorder::{BigEndian, ReadBytesExt};
 use encoding_rs::Encoding;
@@ -98,7 +99,9 @@ pub enum ContentType {
     Binary,
 }
 
-impl ContentType {
+impl std::str::FromStr for ContentType {
+    type Err = ZdbError;
+
     /// Converts a string to a ContentType.
     ///
     /// # Arguments
@@ -112,7 +115,7 @@ impl ContentType {
     /// # Errors
     ///
     /// Returns an error if the content type is not recognized.
-    pub fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "text" => Ok(ContentType::Text),
             "html" => Ok(ContentType::Html),
@@ -364,7 +367,7 @@ impl DbInfo {
             content_type = "binary".to_string();
         }
         db_info.content_type = ContentType::from_str(&content_type)?;
-        db_info.is_mdd = if let ContentType::Binary = db_info.content_type { true } else { false };
+        db_info.is_mdd = matches!(db_info.content_type, ContentType::Binary);
 
         db_info.locale_id = get_node_attr_str(&root_attrs, "DefaultSortingLocale");
         db_info.embedded_reg_code = get_node_attr_str(&root_attrs, "RegCode");

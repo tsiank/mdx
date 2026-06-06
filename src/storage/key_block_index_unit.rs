@@ -166,7 +166,6 @@ impl KeyBlockIndexUnit {
             idx_para_reader.read_uint()?
         };
         let key_data_section_comp_size = idx_para_reader.read_uint()?;
-        drop(idx_para_reader);
 
         let block_index_data = Self::read_block_index_data(
             reader,

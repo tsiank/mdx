@@ -70,7 +70,6 @@ impl StorageBlock {
         let _reserved = cursor.read_u16::<BigEndian>()?;
         let data_crc = cursor.read_u32::<BigEndian>()?;
         let header_length = cursor.position() as usize;
-        drop(cursor);
         //let raw_data_length = block_data.len() - header_length;
         let raw_data = &mut block_data[header_length..];
 

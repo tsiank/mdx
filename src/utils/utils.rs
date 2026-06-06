@@ -164,6 +164,9 @@ pub trait KeyComparable {
 pub trait RandomAccessable<T: KeyComparable> {
     fn get_item(&self, index: usize) -> Result<&T>;
     fn len(&self) -> usize;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 //compare the first sort key with the second sort key
 //if prefix_match is true and second sort key start with first sort key, return equal

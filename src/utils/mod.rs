@@ -1,3 +1,5 @@
+#![allow(clippy::module_inception)]
+
 // Utility functions and helpers
 //
 // This module provides general-purpose utility functions including I/O operations,

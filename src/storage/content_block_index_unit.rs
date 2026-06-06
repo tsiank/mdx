@@ -115,7 +115,6 @@ impl ContentBlockIndexUnit {
         let content_block_index_size = idx_para_reader.read_uint()?; //No compression in V1 and V2
         let _content_data_block_comp_size = idx_para_reader.read_uint()?;
 
-        drop(idx_para_reader);
         let block_index_data = read_exact_to_vec(reader, content_block_index_size as usize)?;
         let (block_index_entries, total_original_data_length) =
             Self::read_block_index_entries(&block_index_data, meta_info, block_count as u32)?;
