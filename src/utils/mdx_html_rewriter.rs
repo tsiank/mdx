@@ -1,6 +1,6 @@
 //! HTML rewriter for MDX dictionary content.
 //!
-//! This module provides high-performance streaming HTML link rewriting using lol_html 2.6.0.
+//! This module provides high-performance streaming HTML link rewriting using lol_html 3.0.
 //! It converts various dictionary-specific URL schemes to the MDX protocol format.
 //!
 //! # Supported Link Type Conversions
@@ -27,7 +27,7 @@
 //! // Result: <img src="custom://my-domain.com/entry?profile_id=123&key=test.png">...
 //! ```
 
-use lol_html::{Settings, element, rewrite_str};
+use lol_html::{RewriteStrSettings, element, rewrite_str};
 use percent_encoding;
 use url::Url;
 
@@ -106,14 +106,12 @@ impl MdxHtmlRewriter {
         profile_id: i32,
         base_url: &str,
     ) -> Result<String> {
-        let rewritten = rewrite_str(
-            html,
-            Settings {
-                element_content_handlers: create_handlers!(profile_id, base_url),
-                ..Settings::default()
-            },
-        )
-        .map_err(|e| {
+        let mut settings = RewriteStrSettings::new();
+        for handler in create_handlers!(profile_id, base_url) {
+            settings = settings.append_element_content_handler(handler);
+        }
+
+        let rewritten = rewrite_str(html, settings).map_err(|e| {
             crate::ZdbError::invalid_data_format(format!("Failed to rewrite HTML: {}", e))
         })?;
 

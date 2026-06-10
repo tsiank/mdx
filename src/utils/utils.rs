@@ -352,20 +352,17 @@ pub fn extract_text_from_html(html: &str) -> Result<String> {
     let text_content = RefCell::new(String::new());
 
     // Create HTML rewriter settings with text handler
-    let settings = Settings {
-        element_content_handlers: vec![
-            // Handle text content
-            text!("*", {
-                let content = &text_content;
-                move |text| {
-                    content.borrow_mut().push_str(text.as_str());
-                    content.borrow_mut().push(' ');
-                    Ok(())
-                }
-            }),
-        ],
-        ..Settings::default()
-    };
+    let settings = Settings::new().append_element_content_handler(
+        // Handle text content
+        text!("*", {
+            let content = &text_content;
+            move |text| {
+                content.borrow_mut().push_str(text.as_str());
+                content.borrow_mut().push(' ');
+                Ok(())
+            }
+        }),
+    );
 
     // Create HTML rewriter and process the HTML
     let mut extracter = HtmlRewriter::new(settings, |_c: &[u8]| {
