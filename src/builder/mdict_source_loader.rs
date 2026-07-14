@@ -24,9 +24,10 @@ fn is_text_end(line: &str) -> bool {
 
 impl DataLoader for MDictSourceLoader {
     fn load_data(&mut self, entry: &ZdbRecord) -> Result<Vec<u8>> {
-        let mut data = Vec::<u8>::with_capacity(entry.content_len as usize);
+        let mut data = vec![0; entry.content_len as usize];
         self.input_reader.seek(SeekFrom::Start(entry.position))?;
         self.input_reader.read_exact(&mut data)?;
+        data.push(0);
         Ok(data)
     }
 }
@@ -85,7 +86,9 @@ impl MDictSourceLoader {
             // Read content until text end marker
             let mut content_buffer = String::new();
 
+            let mut content_end_pos;
             loop {
+                content_end_pos = input_reader.stream_position()?;
                 content_buffer.clear();
 
                 let bytes_read = input_reader.read_line(&mut content_buffer)?;
@@ -94,7 +97,7 @@ impl MDictSourceLoader {
                     break;
                 }
             }
-            let content_length = input_reader.stream_position()? - content_start_pos;
+            let content_length = content_end_pos - content_start_pos;
 
             if content_length > MAX_ENTRY_LEN as u64 {
                 return Err(ZdbError::InvalidDataFormat {

@@ -95,6 +95,10 @@ mod icu_impl {
         data: String,
     }
 
+    fn normalize_locale_id(locale: &str) -> String {
+        locale.trim().replace('_', "-")
+    }
+
     impl UCollator {
         /// Creates a collator for the specified BCP-47 locale string.
         ///
@@ -159,6 +163,7 @@ mod icu_impl {
             use icu_collator::options::{AlternateHandling, CaseLevel, Strength};
             use icu_locale::Locale;
 
+            let locale_str = normalize_locale_id(locale_str);
             log::info!("Creating collator for locale: {}", locale_str);
             if locale_str.is_empty() {
                 return Ok(Self {
@@ -173,7 +178,7 @@ mod icu_impl {
                             e
                         ))
                     })?,
-                    locale_str: "".to_string(),
+                    locale_str: String::new(),
                 });
             }
             // Parse the BCP-47 locale string
@@ -301,7 +306,7 @@ mod icu_impl {
 
             log::info!("Successfully created collator for locale: {}", locale_str);
 
-            Ok(Self { collator, locale_str: locale_str.to_string() })
+            Ok(Self { collator, locale_str })
         }
 
         /// Generate a sort key for the given string
@@ -369,6 +374,13 @@ mod icu_impl {
             let collator = UCollator::try_from("en").expect("Failed to create English collator");
             assert!(!collator.locale_str.is_empty());
             log::info!("Successfully created English collator");
+        }
+
+        #[test]
+        fn test_create_legacy_underscore_locale_collator() {
+            let collator = UCollator::try_from("en_US")
+                .expect("Failed to create English collator from legacy locale");
+            assert_eq!(collator.locale_str, "en-US");
         }
 
         /// Test collator creation with empty locale (default)

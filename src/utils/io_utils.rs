@@ -51,7 +51,7 @@ pub fn fix_windows_path(path: &str) -> String {
     if path.len() > 4 {
         let chars: Vec<char> = path.chars().take(4).collect();
         if chars[0] == '/' && chars[1].is_alphabetic() && chars[2] == ':' {
-            path = path.strip_prefix("/").unwrap();
+            return path.strip_prefix("/").unwrap().to_string();
         }
     }
     path.to_string()
