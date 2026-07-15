@@ -56,9 +56,31 @@ use crate::utils::html_escape_mdx_text;
 use crate::utils::io_utils::{load_string_from_file_with_ext, open_file_url_as_reader};
 use crate::utils::url_utils::{self, with_extension};
 use crate::{Result, ZdbError};
+
 const MDICT_INDEX_EXT: &str = "idx";
 const MDICT_MDD_EXT: &str = "mdd";
 const MDICT_KEY_EXT: &str = "key";
+
+fn decode_compact_stylesheet_part(token: u32, part_name: &str, value: &str) -> String {
+    let value = normalize_common_html_entities(value);
+    htmlescape::decode_html(&value).unwrap_or_else(|e| {
+        let preview: String = value.chars().take(80).collect();
+        warn!(
+            "Invalid HTML entity in compact stylesheet at token={} {}, keeping raw value: {:?}; value preview: {}",
+            token, part_name, e, preview
+        );
+        value
+    })
+}
+
+fn normalize_common_html_entities(value: &str) -> String {
+    value
+        .replace("&apos;", "'")
+        .replace("&nbsp;", "\u{00A0}")
+        .replace("&ensp;", "\u{2002}")
+        .replace("&emsp;", "\u{2003}")
+        .replace("&thinsp;", "\u{2009}")
+}
 
 /// High-level MDX dictionary reader.
 ///
@@ -376,18 +398,8 @@ impl MdxReader {
                     "Unexpected end of compact stylesheet (missing suffix)",
                 ))?
                 .to_string();
-            let prefix = htmlescape::decode_html(&prefix).map_err(|e| {
-                ZdbError::invalid_data_format(format!(
-                    "Invalid HTML entity in compact stylesheet: {:?}",
-                    e
-                ))
-            })?;
-            let suffix = htmlescape::decode_html(&suffix).map_err(|e| {
-                ZdbError::invalid_data_format(format!(
-                    "Invalid HTML entity in compact stylesheet: {:?}",
-                    e
-                ))
-            })?;
+            let prefix = decode_compact_stylesheet_part(token, "prefix", &prefix);
+            let suffix = decode_compact_stylesheet_part(token, "suffix", &suffix);
             compact_stylesheet[token as usize] = (prefix, suffix);
             has_stylesheet = true;
         }
